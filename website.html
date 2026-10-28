@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b1018">
+<title>ALP Trading System | Trading Journal</title>
+
+<style>
+:root {
+  --bg:#0b1018;
+  --panel:#111925;
+  --panel-alt:#172232;
+  --border:#29384b;
+  --text:#f2f5fa;
+  --muted:#9eacbf;
+  --primary:#438ff5;
+  --primary-hover:#2f7de7;
+  --green:#27bd8a;
+  --red:#f07878;
+  --yellow:#e8b75b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;line-height:1.5}
+button,input,select,textarea{font:inherit}
+button,a{-webkit-tap-highlight-color:transparent}
+button{cursor:pointer}
+.app{min-height:100vh;display:grid;grid-template-columns:250px minmax(0,1fr)}
+.sidebar{background:#0d131d;border-right:1px solid var(--border);padding:28px 16px;display:flex;flex-direction:column;gap:35px}
+.brand{display:flex;flex-direction:column;padding:0 12px;text-decoration:none;color:var(--text)}
+.brand-name{font-size:32px;font-weight:800;letter-spacing:1px}
+.brand-sub{font-size:15px;font-weight:600}
+.brand-tagline{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6}
+.navigation{display:grid;gap:8px}
+.nav-link{display:flex;gap:13px;align-items:center;color:#c4cede;text-decoration:none;padding:13px;border-radius:10px;font-size:14px}
+.nav-link:hover,.nav-link.active{background:#1b2a40;color:#fff}
+.nav-link.active{border:1px solid #2b4d76}
+.sidebar-footer{margin-top:auto;border-top:1px solid var(--border);padding:18px 12px 0;font-size:13px}
+.sidebar-footer span{display:block;color:var(--muted);font-size:12px;margin-top:7px}
+.main{min-width:0}
+.topbar{height:68px;display:flex;justify-content:space-between;align-items:center;padding:0 30px;border-bottom:1px solid var(--border);background:var(--bg)}
+.topbar-title{font-size:14px;font-weight:600}
+.online-label{font-size:10px;letter-spacing:1px;color:var(--muted)}
+.menu-button{display:none;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 11px}
+.content{max-width:1500px;padding:30px;margin:auto}
+.page-heading{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:25px}
+h1,h2,p{margin-top:0}
+h1{font-size:clamp(26px,3vw,34px);letter-spacing:-.6px;margin-bottom:7px}
+h2{font-size:18px;margin-bottom:5px}
+.eyebrow{font-size:11px;letter-spacing:1.5px;color:var(--primary);font-weight:700;margin-bottom:8px}
+.muted,.hint{color:var(--muted)}
+.muted{margin-bottom:0}
+.small{font-size:12px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:22px}
+.stat-card,.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px}
+.stat-card{padding:19px;min-width:0}
+.stat-label,.stat-note{display:block;color:var(--muted);font-size:12px}
+.stat-card strong{display:block;font-size:clamp(22px,2.5vw,30px);margin:8px 0;overflow-wrap:anywhere}
+.stat-note{font-size:11px}
+.panel{padding:22px;margin-bottom:22px;min-width:0}
+.form-panel{display:none}
+.form-panel.open{display:block}
+.panel-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+.panel-heading .muted{margin-top:5px}
+.icon-button{background:var(--panel-alt);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 11px}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+.field{display:grid;gap:7px;min-width:0}
+.field label{font-size:13px;color:#c4cede}
+.field input,.field select,.field textarea,.filters input,.filters select{width:100%;min-width:0;background:#0c131d;color:var(--text);border:1px solid var(--border);border-radius:9px;padding:12px;outline:none}
+.field textarea{resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus,.filters input:focus,.filters select:focus{border-color:var(--primary)}
+.field input::placeholder,.field textarea::placeholder,.filters input::placeholder{color:#708097}
+.hint{font-size:11px}
+.full-width{grid-column:1/-1}
+.form-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.button{border:0;border-radius:9px;padding:11px 16px;font-weight:600;font-size:13px}
+.button.primary{background:var(--primary);color:#fff}
+.button.primary:hover{background:var(--primary-hover)}
+.button.secondary{background:var(--panel-alt);color:var(--text);border:1px solid var(--border)}
+.button.secondary:hover{background:#243349}
+.filters{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:12px;margin-bottom:18px}
+.table-wrap{width:100%;overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:730px;text-align:left;font-size:13px}
+th,td{padding:14px 13px;border-bottom:1px solid var(--border);white-space:nowrap}
+th{color:var(--muted);background:var(--panel-alt);font-size:11px;font-weight:600}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#162130}
+.badge{display:inline-block;padding:5px 9px;border-radius:30px;font-size:11px;font-weight:700}
+.badge.win{color:#5be0b2;background:#173a32}
+.badge.loss{color:#ff999f;background:#46272e}
+.badge.pending{color:#e8c878;background:#40371f}
+.badge.break-even{color:#a8c8ff;background:#203653}
+.row-actions{display:flex;gap:7px}
+.action-button{border:1px solid var(--border);border-radius:7px;background:var(--panel-alt);color:var(--text);padding:6px 9px;font-size:11px}
+.action-button.delete{color:#ff999f}
+.empty-state{text-align:center;color:var(--muted);padding:35px 15px}
+.storage-note{margin-top:15px}
+.toast{display:none;position:fixed;bottom:22px;left:50%;transform:translateX(-50%);max-width:calc(100vw - 30px);background:#d9fbe9;color:#123a2b;padding:12px 17px;border-radius:9px;z-index:30;box-shadow:0 8px 30px #0005;font-size:13px}
+.toast.show{display:block}
+.overlay{display:none}
+@media(max-width:1100px){
+.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.content{padding:24px 20px}
+}
+@media(max-width:700px){
+.app{display:block}
+.sidebar{position:fixed;z-index:21;top:0;bottom:0;left:0;width:min(280px,85vw);transform:translateX(-105%);transition:transform .2s ease;box-shadow:12px 0 35px #0006}
+.sidebar.open{transform:translateX(0)}
+.overlay.visible{display:block;position:fixed;inset:0;z-index:20;background:#0009}
+.topbar{height:60px;padding:0 14px;gap:12px}
+.menu-button{display:block}
+.content{padding:22px 13px}
+.page-heading{align-items:flex-start}
+.page-heading .button{padding:10px 11px}
+.panel{padding:16px}
+.stat-card{padding:14px}
+.form-grid{grid-template-columns:minmax(0,1fr)}
+.full-width{grid-column:auto}
+.filters{grid-template-columns:minmax(0,1fr)}
+.online-label{font-size:9px;letter-spacing:0}
+}
+@media(max-width:390px){
+.page-heading{flex-direction:column}
+.stats-grid{gap:9px}
+.stat-card strong{font-size:23px}
+.panel-heading.records-heading{align-items:flex-start;flex-direction:column}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-name">ALP</span>
+      <span class="brand-sub">Trading Journal</span>
+      <span class="brand-tagline">Alignment. Liquidity. Price Action.</span>
+    </a>
+    <nav class="navigation">
+      <a href="index.html" class="nav-link">⌂ <span>Dashboard</span></a>
+      <a href="#journal" class="nav-link active">▤ <span>Trading Journal</span></a>
+      <a href="#statistics" class="nav-link">▥ <span>Statistics</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      ALP Trading System
+      <span>Trade the setup, not the mood.</span>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="menu-button" id="menuButton" aria-label="Open navigation">☰</button>
+      <span class="topbar-title">Trading Journal</span>
+      <span class="online-label">PERSONAL JOURNAL</span>
+    </header>
+
+    <div class="content">
+      <section class="page-heading">
+        <div>
+          <p class="eyebrow">ALP TRADING SYSTEM</p>
+          <h1>Trading Journal</h1>
+          <p class="muted">Record. Review. Improve.</p>
+        </div>
+        <button class="button primary" id="newTradeButton">+ Record Trade</button>
+      </section>
+
+      <section class="stats-grid" id="statistics">
+        <article class="stat-card">
+          <span class="stat-label">Total Trades</span>
+          <strong id="totalTrades">0</strong>
+          <span class="stat-note">Recorded trades</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Win Rate</span>
+          <strong id="winRate">0%</strong>
+          <span class="stat-note">Wins ÷ decided trades</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Wins / Losses</span>
+          <strong id="winLoss">0 / 0</strong>
+          <span class="stat-note">Trade outcomes</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Net Result</span>
+          <strong id="netResult">0R</strong>
+          <span class="stat-note">Sum of recorded R results</span>
+        </article>
+      </section>
+
+      <section class="panel form-panel" id="tradeFormPanel">
+        <div class="panel-heading">
+          <div>
+            <h2 id="formTitle">Record a Trade</h2>
+            <p class="muted small">Enter your trade details below.</p>
+          </div>
+          <button class="icon-button" id="closeFormButton" aria-label="Close form">✕</button>
+        </div>
+
+        <form id="tradeForm">
+          <input type="hidden" id="tradeId">
+          <div class="form-grid">
+            <div class="field">
+              <label for="tradeDate">Trade Date *</label>
+              <input type="date" id="tradeDate" required>
+            </div>
+            <div class="field">
+              <label for="instrument">Instrument *</label>
+              <input id="instrument" value="US100" placeholder="e.g. US100" maxlength="30" required>
+            </div>
+            <div class="field">
+              <label for="direction">Direction *</label>
+              <select id="direction" required>
+                <option value="Buy">Buy / Long</option>
+                <option value="Sell">Sell / Short</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="outcome">Outcome *</label>
+              <select id="outcome" required>
+                <option value="Pending">Pending</option>
+                <option value="Win">Win</option>
+                <option value="Loss">Loss</option>
+                <option value="Break-even">Break-even</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="risk">Risk (account currency) *</label>
+              <input type="number" id="risk" min="0.01" step="any" placeholder="e.g. 5" required>
+            </div>
+            <div class="field">
+              <label for="resultR">Result (R multiples)</label>
+              <input type="number" id="resultR" step="any" placeholder="e.g. 2 for a 2R win">
+              <small class="hint">Optional. Enter your actual result in R.</small>
+            </div>
+            <div class="field">
+              <label for="entry">Entry Price</label>
+              <input type="number" id="entry" step="any" placeholder="Entry price">
+            </div>
+            <div class="field">
+              <label for="stopLoss">Stop-loss Price</label>
+              <input type="number" id="stopLoss" step="any" placeholder="Stop-loss">
+            </div>
+            <div class="field">
+              <label for="takeProfit">Take-profit Price</label>
+              <input type="number" id="takeProfit" step="any" placeholder="Take-profit">
+            </div>
+            <div class="field">
+              <label for="setup">Setup</label>
+              <input id="setup" maxlength="100" placeholder="e.g. Break of structure + pullback">
+            </div>
+            <div class="field full-width">
+              <label for="notes">Trade Notes / Lesson</label>
+              <textarea id="notes" rows="3" maxlength="2000" placeholder="Why did you take this trade? What did you learn?"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="button primary" type="submit" id="saveTradeButton">Save Trade</button>
+            <button class="button secondary" type="button" id="cancelButton">Cancel</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel" id="journal">
+        <div class="panel-heading records-heading">
+          <div>
+            <h2>Trade Records</h2>
+            <p class="muted small">Select Edit to change any saved trade.</p>
+          </div>
+          <button class="button secondary" id="exportButton">Export CSV</button>
+        </div>
+
+        <div class="filters">
+          <input type="search" id="searchInput" placeholder="Search instrument or notes..." aria-label="Search trades">
+          <select id="outcomeFilter" aria-label="Filter by outcome">
+            <option value="All">All outcomes</option>
+            <option value="Win">Wins</option>
+            <option value="Loss">Losses</option>
+            <option value="Break-even">Break-even</option>
+            <option value="Pending">Pending</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th><th>Instrument</th><th>Direction</th>
+                <th>Risk</th><th>Outcome</th><th>Result (R)</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tradeTableBody"></tbody>
+          </table>
+        </div>
+        <p class="muted small storage-note">Records are saved in this browser on this device.</p>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+(() => {
+  const STORAGE_KEY = "alp-trading-journal-v1";
+  const $ = id => document.getElementById(id);
+  const form = $("tradeForm");
+  const formPanel = $("tradeFormPanel");
+  const tableBody = $("tradeTableBody");
+  let trades = loadTrades();
+
+  function loadTrades() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      return Array.isArray(saved)
+        ? saved.filter(t => t && typeof t === "object" && typeof t.id === "string")
+        : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function persist() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(trades));
+      return true;
+    } catch {
+      notify("Could not save data. Check browser storage.");
+      return false;
+    }
+  }
+
+  function notify(message) {
+    const toast = $("toast");
+    toast.textContent = message;
+    toast.classList.add("show");
+    clearTimeout(notify.timer);
+    notify.timer = setTimeout(() => toast.classList.remove("show"), 2600);
+  }
+
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+    })[char]);
+  }
+
+  function formatNumber(value) {
+    return Number(value).toLocaleString(undefined, {maximumFractionDigits:2});
+  }
+
+  function signedR(value) {
+    const n = Number(value);
+    return `${n > 0 ? "+" : ""}${formatNumber(n)}R`;
+  }
+
+  function today() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+
+  function showForm(trade = null) {
+    form.reset();
+    $("tradeId").value = trade?.id || "";
+    $("tradeDate").value = trade?.date || today();
+    $("instrument").value = trade?.instrument || "US100";
+    $("direction").value = trade?.direction || "Buy";
+    $("outcome").value = trade?.outcome || "Pending";
+    $("risk").value = trade?.risk ?? "";
+    $("resultR").value = trade?.resultR ?? "";
+    $("entry").value = trade?.entry ?? "";
+    $("stopLoss").value = trade?.stopLoss ?? "";
+    $("takeProfit").value = trade?.takeProfit ?? "";
+    $("setup").value = trade?.setup || "";
+    $("notes").value = trade?.notes || "";
+    $("formTitle").textContent = trade ? "Edit Trade" : "Record a Trade";
+    $("saveTradeButton").textContent = trade ? "Update Trade" : "Save Trade";
+    formPanel.classList.add("open");
+    formPanel.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  function closeForm() {
+    formPanel.classList.remove("open");
+    form.reset();
+    $("tradeId").value = "";
+  }
+
+  function getFormData() {
+    const outcome = $("outcome").value;
+    const resultText = $("resultR").value.trim();
+    let resultR = resultText === "" ? null : Number(resultText);
+
+    if (resultR === null) {
+      if (outcome === "Win") resultR = 1;
+      else if (outcome === "Loss") resultR = -1;
+      else if (outcome === "Break-even") resultR = 0;
+    }
+
+    const id = $("tradeId").value ||
+      (Date.now().toString(36) + Math.random().toString(36).slice(2,9));
+    const existing = trades.find(t => t.id === id);
+
+    return {
+      id,
+      date:$("tradeDate").value,
+      instrument:$("instrument").value.trim().toUpperCase(),
+      direction:$("direction").value,
+      outcome,
+      risk:Number($("risk").value),
+      resultR,
+      entry:$("entry").value.trim(),
+      stopLoss:$("stopLoss").value.trim(),
+      takeProfit:$("takeProfit").value.trim(),
+      setup:$("setup").value.trim(),
+      notes:$("notes").value.trim(),
+      createdAt:existing?.createdAt || new Date().toISOString(),
+      updatedAt:new Date().toISOString()
+    };
+  }
+
+  function validateTrade(trade) {
+    if (!trade.date) return notify("Please select a trade date."), false;
+    if (!trade.instrument) return notify("Please enter an instrument."), false;
+    if (!Number.isFinite(trade.risk) || trade.risk <= 0)
+      return notify("Risk must be greater than zero."), false;
+    if (trade.resultR !== null && !Number.isFinite(trade.resultR))
+      return notify("Please enter a valid result in R."), false;
+    if (trade.outcome === "Win" && trade.resultR !== null && trade.resultR <= 0)
+      return notify("A winning trade should have a positive R result."), false;
+    if (trade.outcome === "Loss" && trade.resultR !== null && trade.resultR >= 0)
+      return notify("A losing trade should have a negative R result."), false;
+    if (trade.outcome === "Break-even" && trade.resultR !== null && trade.resultR !== 0)
+      return notify("A break-even trade should have a 0R result."), false;
+    return true;
+  }
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    const trade = getFormData();
+    if (!validateTrade(trade)) return;
+
+    const index = trades.findIndex(t => t.id === trade.id);
+    const oldTrades = trades.slice();
+
+    if (index >= 0) trades[index] = trade;
+    else trades.push(trade);
+
+    if (!persist()) {
+      trades = oldTrades;
+      return;
+    }
+
+    render();
+    closeForm();
+    notify(index >= 0 ? "Trade updated successfully." : "Trade saved successfully.");
+  });
+
+  function outcomeClass(outcome) {
+    if (outcome === "Win") return "win";
+    if (outcome === "Loss") return "loss";
+    if (outcome === "Break-even") return "break-even";
+    return "pending";
+  }
+
+  function render() {
+    const query = $("searchInput").value.trim().toLowerCase();
+    const filter = $("outcomeFilter").value;
+
+    const visible = trades
+      .filter(t => filter === "All" || t.outcome === filter)
+      .filter(t => [t.instrument,t.setup,t.notes,t.direction]
+        .some(value => String(value || "").toLowerCase().includes(query)))
+      .sort((a,b) => String(b.date).localeCompare(String(a.date)));
+
+    if (!visible.length) {
+      tableBody.innerHTML = `<tr><td colspan="7" class="empty-state">${
+        trades.length ? "No trades match your search." :
+        "No trades recorded yet. Select Record Trade to begin."
+      }</td></tr>`;
+    } else {
+      tableBody.innerHTML = visible.map(t => `
+        <tr>
+          <td>${escapeHTML(t.date)}</td>
+          <td>${escapeHTML(t.instrument)}</td>
+          <td>${escapeHTML(t.direction)}</td>
+          <td>${formatNumber(t.risk)}</td>
+          <td><span class="badge ${outcomeClass(t.outcome)}">${escapeHTML(t.outcome)}</span></td>
+          <td>${t.resultR === null || t.resultR === undefined ? "—" : escapeHTML(signedR(t.resultR))}</td>
+          <td><div class="row-actions">
+            <button class="action-button" data-action="edit" data-id="${escapeHTML(t.id)}">Edit</button>
+            <button class="action-button delete" data-action="delete" data-id="${escapeHTML(t.id)}">Delete</button>
+          </div></td>
+        </tr>`).join("");
+    }
+    updateStats();
+  }
+
+  function updateStats() {
+    const wins = trades.filter(t => t.outcome === "Win").length;
+    const losses = trades.filter(t => t.outcome === "Loss").length;
+    const decided = trades.filter(t =>
+      ["Win","Loss","Break-even"].includes(t.outcome));
+    const winRate = decided.length ? wins / decided.length * 100 : 0;
+    const netR = decided.reduce((sum,t) =>
+      sum + (Number.isFinite(Number(t.resultR)) ? Number(t.resultR) : 0),0);
+
+    $("totalTrades").textContent = trades.length;
+    $("winRate").textContent = `${winRate.toFixed(1)}%`;
+    $("winLoss").textContent = `${wins} / ${losses}`;
+    $("netResult").textContent = signedR(netR);
+    $("netResult").style.color =
+      netR > 0 ? "var(--green)" : netR < 0 ? "var(--red)" : "var(--text)";
+  }
+
+  tableBody.addEventListener("click", event => {
+    const button = event.target.closest("button[data-action]");
+    if (!button) return;
+    const trade = trades.find(t => t.id === button.dataset.id);
+    if (!trade) return;
+
+    if (button.dataset.action === "edit") {
+      showForm(trade);
+    } else if (button.dataset.action === "delete") {
+      if (!confirm(`Delete the ${trade.instrument} trade dated ${trade.date}?`)) return;
+      const oldTrades = trades;
+      trades = trades.filter(t => t.id !== trade.id);
+      if (!persist()) {
+        trades = oldTrades;
+        return;
+      }
+      render();
+      notify("Trade deleted.");
+    }
+  });
+
+  $("newTradeButton").addEventListener("click", () => showForm());
+  $("closeFormButton").addEventListener("click", closeForm);
+  $("cancelButton").addEventListener("click", closeForm);
+  $("searchInput").addEventListener("input", render);
+  $("outcomeFilter").addEventListener("change", render);
+
+  $("exportButton").addEventListener("click", () => {
+    if (!trades.length) {
+      notify("There are no records to export.");
+      return;
+    }
+    const columns = ["date","instrument","direction","risk","outcome","resultR","entry","stopLoss","takeProfit","setup","notes"];
+    const csvCell = value => `"${String(value ?? "").replace(/"/g,'""')}"`;
+    const csv = [
+      columns.join(","),
+      ...trades.map(t => columns.map(column => csvCell(t[column])).join(","))
+    ].join("\r\n");
+    const blob = new Blob(["\uFEFF" + csv],{type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "alp-trading-journal.csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url),1000);
+    notify("CSV export downloaded.");
+  });
+
+  $("menuButton").addEventListener("click", () => {
+    $("sidebar").classList.toggle("open");
+    $("overlay").classList.toggle("visible");
+  });
+
+  $("overlay").addEventListener("click", () => {
+    $("sidebar").classList.remove("open");
+    $("overlay").classList.remove("visible");
+  });
+
+  $("sidebar").addEventListener("click", event => {
+    if (event.target.closest("a")) {
+      $("sidebar").classList.remove("open");
+      $("overlay").classList.remove("visible");
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
